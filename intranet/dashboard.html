@@ -4,27 +4,17 @@
   <meta charset="UTF-8">
   <title>Staff Dashboard - Roblox Health Service</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
   <style>
-    .card-list { list-style: none; padding: 0; }
-    .card-list li { margin-bottom: 1rem; }
+    .card-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
+    .card-list li { flex: 1 1 calc(33% - 1rem); min-width: 200px; }
     .card-link {
-      display: block;
-      padding: 1rem;
-      background: #f3f3f3;
-      border: 1px solid #d0d0d0;
-      border-radius: 4px;
-      text-decoration: none;
+      display: block; padding: 1rem; background: #f3f3f3;
+      border: 1px solid #d0d0d0; border-radius: 4px; text-decoration: none;
       color: #0b0c0c;
     }
-    .card-link:hover {
-      background: #e5e5e5;
-    }
-    .card-header {
-      font-weight: bold;
-      margin-bottom: .5rem;
-    }
+    .card-link:hover { background: #e5e5e5; }
+    .card-header { font-weight: bold; margin-bottom: .5rem; }
   </style>
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
@@ -32,15 +22,13 @@
 <header class="nhsuk-header" role="banner">
   <div class="nhsuk-width-container nhsuk-header__container">
     <div class="nhsuk-header__content">
-      <span class="nhsuk-header__logo">
-        <span class="nhsuk-header__logo-text">Roblox Health Service</span>
-      </span>
+      <span class="nhsuk-header__logo"><span class="nhsuk-header__logo-text">Roblox Health Service</span></span>
       <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
         <ul class="nhsuk-header__navigation-list">
           <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="../index.html">Home</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="../education.html">Education</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="../research.html">Research</a></li>
           <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="patients.html">Patients</a></li>
+          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="add-patient.html">Add Patient</a></li>
           <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="login.html">Logout</a></li>
         </ul>
       </nav>
@@ -50,24 +38,14 @@
 
 <div class="nhsuk-width-container">
   <main class="nhsuk-main-wrapper">
-
     <h1 class="nhsuk-heading-xl">Staff Dashboard</h1>
     <p class="nhsuk-body-l">Welcome, staff member. Select an option below to continue.</p>
 
-    <!-- Example card sections -->
     <section>
       <h2 class="nhsuk-heading-l">Patient Management</h2>
       <ul class="card-list">
-        <li><a href="#" class="card-link"><span class="card-header">View Patient List</span> See all admitted patients.</a></li>
-        <li><a href="#" class="card-link"><span class="card-header">Add New Patient</span> Register a new patient.</a></li>
-      </ul>
-    </section>
-
-    <section>
-      <h2 class="nhsuk-heading-l">Tasks & Orders</h2>
-      <ul class="card-list">
-        <li><a href="#" class="card-link"><span class="card-header">Pending Orders</span> Check outstanding orders.</a></li>
-        <li><a href="#" class="card-link"><span class="card-header">Task Board</span> View your tasks.</a></li>
+        <li><a href="patients.html" class="card-link"><span class="card-header">View Patients</span> See all admitted patients.</a></li>
+        <li><a href="add-patient.html" class="card-link"><span class="card-header">Add New Patient</span> Register a new patient.</a></li>
       </ul>
     </section>
 
