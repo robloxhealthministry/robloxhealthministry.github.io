@@ -28,6 +28,37 @@
   </div>
 </header>
 
+  <tbody id="patientBody">
+  <!-- Rows will be added dynamically -->
+</tbody>
+
+<script>
+  const tableBody = document.getElementById('patientBody');
+
+  // Load patients from localStorage
+  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+
+  function renderTable(filter = '') {
+    tableBody.innerHTML = '';
+    patients
+      .filter(p => p.name.toLowerCase().includes(filter))
+      .forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${p.name}</td><td>${p.room}</td><td>${p.condition}</td>`;
+        tableBody.appendChild(tr);
+      });
+  }
+
+  // Initial render
+  renderTable();
+
+  // Search filter
+  const searchInput = document.getElementById('search');
+  searchInput.addEventListener('input', function() {
+    renderTable(this.value.toLowerCase());
+  });
+</script>
+
 <div class="nhsuk-width-container">
   <main class="nhsuk-main-wrapper">
     <h1 class="nhsuk-heading-xl">Patient List</h1>
