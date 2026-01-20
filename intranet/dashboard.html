@@ -7,18 +7,22 @@
 <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  .cards { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
-  .card { flex: 1 1 200px; padding: 1rem; border-radius: 8px; color: white; font-weight: bold; text-align: center; }
-  .Critical { background-color: #d9534f; }   /* red */
-  .Stable { background-color: #5cb85c; }     /* green */
-  .Recovering { background-color: #f0ad4e; } /* orange */
-  .Total { background-color: #0275d8; }      /* blue */
-  .links { margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; }
-  .recent { margin-top: 2rem; }
-  .recent h2 { margin-bottom: 0.5rem; }
-  .recent ul { list-style:none; padding-left:0; }
-  .recent li { padding:0.25rem 0; border-bottom:1px solid #ddd; }
-  canvas { max-width:600px; margin-top:2rem; }
+.cards { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
+.card { flex:1 1 200px; padding:1rem; border-radius:8px; color:white; font-weight:bold; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.5rem;}
+.Critical { background-color:#d9534f; }
+.Stable { background-color:#5cb85c; }
+.Recovering { background-color:#f0ad4e; }
+.Total { background-color:#0275d8; }
+.links { margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap; }
+.recent { margin-top:2rem; }
+.recent h2 { margin-bottom:0.5rem; }
+.recent ul { list-style:none; padding-left:0; }
+.recent li { padding:0.25rem 0; border-bottom:1px solid #ddd; }
+canvas { max-width:600px; margin-top:2rem; }
+.breadcrumb { font-size:0.9rem; margin-top:0.5rem; margin-bottom:1rem; }
+.breadcrumb a { color:#005eb8; text-decoration:none; }
+.breadcrumb a:hover { text-decoration:underline; }
+.card i { font-style:normal; font-size:1.5rem; }
 </style>
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
@@ -39,14 +43,18 @@
 
 <div class="nhsuk-width-container">
 <main class="nhsuk-main-wrapper">
+
+<div class="breadcrumb">
+<a href="dashboard.html">Dashboard</a>
+</div>
+
 <h1 class="nhsuk-heading-xl">Dashboard</h1>
 
-<!-- Patient summary cards -->
 <div class="cards">
-  <div class="card Total" id="totalPatients">Total Patients: 0</div>
-  <div class="card Critical" id="criticalPatients">Critical: 0</div>
-  <div class="card Stable" id="stablePatients">Stable: 0</div>
-  <div class="card Recovering" id="recoveringPatients">Recovering: 0</div>
+  <div class="card Total"><i>🧑‍⚕️</i> <span id="totalPatients">Total Patients: 0</span></div>
+  <div class="card Critical"><i>⚠️</i> <span id="criticalPatients">Critical: 0</span></div>
+  <div class="card Stable"><i>✅</i> <span id="stablePatients">Stable: 0</span></div>
+  <div class="card Recovering"><i>🔶</i> <span id="recoveringPatients">Recovering: 0</span></div>
 </div>
 
 <div class="links">
@@ -54,38 +62,28 @@
   <a class="nhsuk-button nhsuk-button--primary" href="add-patient.html">Add New Patient</a>
 </div>
 
-<!-- Recent patients -->
 <div class="recent">
   <h2>Recently Added Patients</h2>
   <ul id="recentPatients"></ul>
 </div>
 
-<!-- Status chart -->
 <canvas id="statusChart"></canvas>
 
 <script>
-// Chart.js setup
-let chartCtx = document.getElementById('statusChart').getContext('2d');
-let statusChart = new Chart(chartCtx, {
-  type: 'bar',
-  data: { labels:['Critical','Stable','Recovering'], datasets:[{ label:'Number of Patients', data:[0,0,0], backgroundColor:['#d9534f','#5cb85c','#f0ad4e'] }] },
-  options: { responsive:true, plugins:{legend:{display:false}, title:{display:true, text:'Patient Status Overview'}}, scales:{y:{beginAtZero:true, precision:0}} }
-});
+// Load patients from localStorage
+const patients = JSON.parse(localStorage.getItem('patients')||'[]');
 
-// Update dashboard function
-function updateDashboard(){
-  const patients = JSON.parse(localStorage.getItem('patients')||'[]');
-  const counts = {Critical:0,Stable:0,Recovering:0};
+// Summary counts
+function updateDashboard() {
+  const counts={Critical:0,Stable:0,Recovering:0};
   patients.forEach(p=>{ if(counts[p.status]!==undefined) counts[p.status]++; });
 
-  // Update cards
-  document.getElementById('totalPatients').textContent = `Total Patients: ${patients.length}`;
-  document.getElementById('criticalPatients').textContent = `Critical: ${counts.Critical}`;
-  document.getElementById('stablePatients').textContent = `Stable: ${counts.Stable}`;
-  document.getElementById('recoveringPatients').textContent = `Recovering: ${counts.Recovering}`;
+  document.getElementById('totalPatients').textContent=`Total Patients: ${patients.length}`;
+  document.getElementById('criticalPatients').textContent=`Critical: ${counts.Critical}`;
+  document.getElementById('stablePatients').textContent=`Stable: ${counts.Stable}`;
+  document.getElementById('recoveringPatients').textContent=`Recovering: ${counts.Recovering}`;
 
-  // Update recent 5 patients
-  const recentList = document.getElementById('recentPatients');
+  const recentList=document.getElementById('recentPatients');
   recentList.innerHTML='';
   [...patients].reverse().slice(0,5).forEach(p=>{
     const li=document.createElement('li');
@@ -93,21 +91,15 @@ function updateDashboard(){
     recentList.appendChild(li);
   });
 
-  // Update chart
-  statusChart.data.datasets[0].data = [counts.Critical, counts.Stable, counts.Recovering];
+  statusChart.data.datasets[0].data=[counts.Critical, counts.Stable, counts.Recovering];
   statusChart.update();
 }
 
-// Initial render
+// Chart.js setup
+const ctx=document.getElementById('statusChart').getContext('2d');
+const statusChart=new Chart(ctx,{type:'bar',data:{labels:['Critical','Stable','Recovering'],datasets:[{label:'Patients',data:[0,0,0],backgroundColor:['#d9534f','#5cb85c','#f0ad4e']}]},options:{responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Patient Status Overview'}},scales:{y:{beginAtZero:true,precision:0}}}});
+
 updateDashboard();
-
-// Live updates using storage event
-window.addEventListener('storage', function(e){
-  if(e.key==='patients'){ updateDashboard(); }
-});
-
-// Optional: poll every 2 seconds for same-tab updates
-setInterval(updateDashboard,2000);
 </script>
 
 </main>
