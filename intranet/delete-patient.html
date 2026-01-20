@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Edit Patient - Roblox Health Service</title>
+  <title>Delete Patient - Roblox Health Service</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
+  <style>
+    .actions { margin-top: 1rem; }
+    .actions a, .actions button { margin-right: 0.5rem; }
+  </style>
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
 
@@ -16,31 +20,14 @@
 
 <div class="nhsuk-width-container">
   <main class="nhsuk-main-wrapper">
-    <h1 class="nhsuk-heading-xl">Edit Patient</h1>
+    <h1 class="nhsuk-heading-xl">Delete Patient</h1>
 
-    <form id="editForm">
-      <label class="nhsuk-label" for="name">Patient Name</label>
-      <input class="nhsuk-input" id="name" type="text" required>
+    <p class="nhsuk-body-l" id="patientInfo"></p>
 
-      <label class="nhsuk-label" for="room">Room Number</label>
-      <input class="nhsuk-input" id="room" type="text" required>
-
-      <label class="nhsuk-label" for="presenting">Presenting Condition</label>
-      <input class="nhsuk-input" id="presenting" type="text" required>
-
-      <label class="nhsuk-label" for="diagnosis">Diagnosis</label>
-      <input class="nhsuk-input" id="diagnosis" type="text" required>
-
-      <label class="nhsuk-label" for="status">Status</label>
-      <select class="nhsuk-select" id="status" required>
-        <option value="Stable">Stable</option>
-        <option value="Critical">Critical</option>
-        <option value="Recovering">Recovering</option>
-      </select>
-
-      <button class="nhsuk-button nhsuk-button--primary" type="submit">Save Changes</button>
+    <div class="actions">
+      <button class="nhsuk-button nhsuk-button--warning" id="confirmDelete">Yes, Delete</button>
       <a class="nhsuk-button nhsuk-button--secondary" href="patients.html">Cancel</a>
-    </form>
+    </div>
 
     <script>
       const urlParams = new URLSearchParams(window.location.search);
@@ -48,23 +35,12 @@
       const patients = JSON.parse(localStorage.getItem('patients') || '[]');
       if(!patients[index]) window.location.href = 'patients.html';
 
-      // Prefill form
-      const p = patients[index];
-      document.getElementById('name').value = p.name;
-      document.getElementById('room').value = p.room;
-      document.getElementById('presenting').value = p.presenting;
-      document.getElementById('diagnosis').value = p.diagnosis;
-      document.getElementById('status').value = p.status;
+      const patient = patients[index];
+      document.getElementById('patientInfo').textContent =
+        `Patient Name: ${patient.name} | Room: ${patient.room} | Status: ${patient.status}`;
 
-      document.getElementById('editForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        patients[index] = {
-          name: document.getElementById('name').value,
-          room: document.getElementById('room').value,
-          presenting: document.getElementById('presenting').value,
-          diagnosis: document.getElementById('diagnosis').value,
-          status: document.getElementById('status').value
-        };
+      document.getElementById('confirmDelete').addEventListener('click', function(){
+        patients.splice(index,1);
         localStorage.setItem('patients', JSON.stringify(patients));
         window.location.href = 'patients.html';
       });
