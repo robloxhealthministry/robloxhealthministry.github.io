@@ -1,114 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Patients - Roblox Health Service</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
-  <style>
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { border: 1px solid #d0d0d0; padding: 0.5rem; text-align: left; }
-    th { cursor: pointer; background: #f7f7f7; }
-    .nhsuk-button { margin-right: 0.5rem; margin-bottom: 0.25rem; }
-    .badge { padding: 0.25rem 0.5rem; border-radius: 4px; color: white; font-weight: bold; }
-    .Stable { background-color: green; }
-    .Critical { background-color: red; }
-    .Recovering { background-color: orange; }
-    tr.Critical { background-color: #ffe5e5; }
-    tr.Recovering { background-color: #fff3e0; }
-    tr.Stable { background-color: #e5ffe5; }
-  </style>
+<meta charset="UTF-8">
+<title>Patients - Roblox Health Service</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/nhsuk.min.css">
+<style>
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th, td { border: 1px solid #d0d0d0; padding: 0.5rem; text-align: left; }
+th { cursor: pointer; background: #f7f7f7; }
+.nhsuk-button { margin-right: 0.5rem; margin-bottom: 0.25rem; }
+.badge { padding: 0.25rem 0.5rem; border-radius: 4px; color: white; font-weight: bold; }
+.Stable { background-color: green; }
+.Critical { background-color: red; }
+.Recovering { background-color: orange; }
+tr.Critical { background-color: #ffe5e5; }
+tr.Recovering { background-color: #fff3e0; }
+tr.Stable { background-color: #e5ffe5; }
+.pagination { margin-top: 1rem; }
+.pagination button { margin-right: 0.25rem; }
+</style>
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
 
 <header class="nhsuk-header">
   <div class="nhsuk-width-container nhsuk-header__container">
     <span class="nhsuk-header__logo-text">Roblox Health Service</span>
+    <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
+      <ul class="nhsuk-header__navigation-list">
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="dashboard.html">Dashboard</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="patients.html">Patients</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="add-patient.html">Add Patient</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="login.html">Logout</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
 <div class="nhsuk-width-container">
-  <main class="nhsuk-main-wrapper">
-    <h1 class="nhsuk-heading-xl">Patient List</h1>
+<main class="nhsuk-main-wrapper">
+<h1 class="nhsuk-heading-xl">Patient List</h1>
 
-    <label class="nhsuk-label" for="search">Search Patients</label>
-    <input class="nhsuk-input" id="search" placeholder="Search by name...">
+<label class="nhsuk-label" for="search">Search Patients</label>
+<input class="nhsuk-input" id="search" placeholder="Search by name...">
+<button class="nhsuk-button nhsuk-button--secondary" id="exportCSV">Export CSV</button>
 
-    <table>
-      <thead>
-        <tr>
-          <th onclick="sortTable('name')">Name</th>
-          <th onclick="sortTable('room')">Room</th>
-          <th onclick="sortTable('presenting')">Presenting Condition</th>
-          <th onclick="sortTable('diagnosis')">Diagnosis</th>
-          <th onclick="sortTable('status')">Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="patientBody"></tbody>
-    </table>
+<table>
+  <thead>
+    <tr>
+      <th onclick="sortTable('name')">Name</th>
+      <th onclick="sortTable('room')">Room</th>
+      <th onclick="sortTable('presenting')">Presenting Condition</th>
+      <th onclick="sortTable('diagnosis')">Diagnosis</th>
+      <th onclick="sortTable('status')">Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="patientBody"></tbody>
+</table>
 
-    <script>
-      let patients = JSON.parse(localStorage.getItem('patients') || '[]');
-      let sortAsc = true;
-      let currentSort = 'name';
-      const tableBody = document.getElementById('patientBody');
+<div class="pagination" id="pagination"></div>
 
-      function savePatients() {
-        localStorage.setItem('patients', JSON.stringify(patients));
-        renderTable();
-      }
+<script>
+let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+let sortAsc = true;
+let currentSort = 'status'; // default: critical on top
+let searchFilter = '';
+let currentPage = 1;
+const rowsPerPage = 5;
 
-      function renderTable(filter = '') {
-        tableBody.innerHTML = '';
-        patients.forEach((p, index) => {
-          if (p.name.toLowerCase().includes(filter)) {
-            const tr = document.createElement('tr');
-            tr.className = p.status; // row highlighting
-            tr.innerHTML = `
-              <td>${p.name}</td>
-              <td>${p.room}</td>
-              <td>${p.presenting}</td>
-              <td>${p.diagnosis}</td>
-              <td><span class="badge ${p.status}">${p.status}</span></td>
-              <td>
-                <a class="nhsuk-button nhsuk-button--secondary" href="edit-patient.html?index=${index}">Edit</a>
-                <a class="nhsuk-button nhsuk-button--warning" href="delete-patient.html?index=${index}">Delete</a>
-              </td>
-            `;
-            tableBody.appendChild(tr);
-          }
-        });
-      }
+function savePatients() {
+  localStorage.setItem('patients', JSON.stringify(patients));
+  renderTable();
+}
 
-      function sortTable(column) {
-        if (currentSort === column) sortAsc = !sortAsc;
-        else { currentSort = column; sortAsc = true; }
+function renderTable() {
+  const tableBody = document.getElementById('patientBody');
+  tableBody.innerHTML = '';
+  let filtered = patients.filter(p=>p.name.toLowerCase().includes(searchFilter.toLowerCase()));
 
-        patients.sort((a,b)=>{
-          if(a[column] < b[column]) return sortAsc?-1:1;
-          if(a[column] > b[column]) return sortAsc?1:-1;
-          return 0;
-        });
-        renderTable(document.getElementById('search').value.toLowerCase());
-      }
+  // Sort with critical first if status sorting
+  if(currentSort==='status'){
+    filtered.sort((a,b)=>{
+      const order = {'Critical':0,'Recovering':1,'Stable':2};
+      return order[a.status]-order[b.status];
+    });
+  } else {
+    filtered.sort((a,b)=>{
+      if(a[currentSort]<b[currentSort]) return sortAsc?-1:1;
+      if(a[currentSort]>b[currentSort]) return sortAsc?1:-1;
+      return 0;
+    });
+  }
 
-      const searchInput = document.getElementById('search');
-      searchInput.addEventListener('input', function() {
-        renderTable(this.value.toLowerCase());
-      });
+  const totalPages = Math.ceil(filtered.length/rowsPerPage);
+  if(currentPage>totalPages) currentPage=1;
+  const start = (currentPage-1)*rowsPerPage;
+  const end = start + rowsPerPage;
+  filtered.slice(start,end).forEach((p,index)=>{
+    const tr = document.createElement('tr');
+    tr.className = p.status;
+    tr.innerHTML = `<td>${p.name}</td>
+      <td>${p.room}</td>
+      <td>${p.presenting}</td>
+      <td>${p.diagnosis}</td>
+      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td>
+        <a class="nhsuk-button nhsuk-button--secondary" href="edit-patient.html?index=${patients.indexOf(p)}">Edit</a>
+        <a class="nhsuk-button nhsuk-button--warning" href="delete-patient.html?index=${patients.indexOf(p)}">Delete</a>
+      </td>`;
+    tableBody.appendChild(tr);
+  });
 
-      renderTable();
-    </script>
+  // Pagination buttons
+  const pagDiv = document.getElementById('pagination');
+  pagDiv.innerHTML='';
+  for(let i=1;i<=totalPages;i++){
+    const btn = document.createElement('button');
+    btn.textContent=i;
+    btn.className='nhsuk-button nhsuk-button--secondary';
+    if(i===currentPage) btn.disabled=true;
+    btn.addEventListener('click',()=>{ currentPage=i; renderTable(); });
+    pagDiv.appendChild(btn);
+  }
+}
 
-  </main>
+document.getElementById('search').addEventListener('input',function(){
+  searchFilter=this.value; currentPage=1; renderTable();
+});
+
+// Sorting
+function sortTable(col){
+  if(currentSort===col) sortAsc=!sortAsc;
+  else{ currentSort=col; sortAsc=true; }
+  renderTable();
+}
+
+// Export CSV
+document.getElementById('exportCSV').addEventListener('click',function(){
+  let csv='Name,Room,Presenting Condition,Diagnosis,Status\n';
+  patients.forEach(p=>{csv+=`${p.name},${p.room},${p.presenting},${p.diagnosis},${p.status}\n`;});
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='patients.csv';
+  a.click(); URL.revokeObjectURL(url);
+});
+
+renderTable();
+</script>
+</main>
 </div>
 
 <footer class="nhsuk-footer">
-  <div class="nhsuk-width-container">
-    <p class="nhsuk-body-s">© Roblox Health Service</p>
-  </div>
+<div class="nhsuk-width-container">
+<p class="nhsuk-body-s">© Roblox Health Service</p>
+</div>
 </footer>
-
 </body>
 </html>
