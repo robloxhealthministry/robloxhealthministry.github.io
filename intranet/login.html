@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Staff Login - Roblox Health Service</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
@@ -15,7 +14,6 @@
       <span class="nhsuk-header__logo">
         <span class="nhsuk-header__logo-text">Roblox Health Service</span>
       </span>
-
       <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
         <ul class="nhsuk-header__navigation-list">
           <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="../index.html">Home</a></li>
@@ -32,12 +30,13 @@
   <main class="nhsuk-main-wrapper">
     <h1 class="nhsuk-heading-xl">Staff Login</h1>
 
-    <form>
+    <!-- Fake login: redirect to dashboard -->
+    <form onsubmit="window.location.href='dashboard.html'; return false;">
       <label class="nhsuk-label" for="username">Username</label>
-      <input class="nhsuk-input" id="username" type="text">
+      <input class="nhsuk-input" id="username" type="text" required>
 
       <label class="nhsuk-label" for="password">Password</label>
-      <input class="nhsuk-input" id="password" type="password">
+      <input class="nhsuk-input" id="password" type="password" required>
 
       <button class="nhsuk-button nhsuk-button--primary" type="submit">Login</button>
     </form>
