@@ -69,8 +69,106 @@ tr:hover{background:#e0f3ff;}
 <div class="pagination" id="pagination"></div>
 
 <script>
-// similar JS from live patients page (sorting, pagination, export CSV)
-// plus now badges have icons like ✅ ⚠️ 🔶
+let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+let sortAsc = true;
+let currentSort = 'status';
+let searchFilter = '';
+let currentPage = 1;
+const rowsPerPage = 5;
+
+// Save function
+function savePatients() {
+  localStorage.setItem('patients', JSON.stringify(patients));
+  renderTable();
+}
+
+// Render table function
+function renderTable() {
+  const tableBody = document.getElementById('patientBody');
+  tableBody.innerHTML = '';
+
+  let filtered = patients.filter(p => p.name.toLowerCase().includes(searchFilter.toLowerCase()));
+
+  // Critical patients always on top
+  if(currentSort==='status'){
+    filtered.sort((a,b)=>{
+      const order={'Critical':0,'Recovering':1,'Stable':2};
+      return order[a.status]-order[b.status];
+    });
+  } else {
+    filtered.sort((a,b)=>{
+      if(a[currentSort]<b[currentSort]) return sortAsc?-1:1;
+      if(a[currentSort]>b[currentSort]) return sortAsc?1:-1;
+      return 0;
+    });
+  }
+
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  if(currentPage > totalPages) currentPage = 1;
+
+  filtered.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage).forEach((p, index) => {
+    const tr = document.createElement('tr');
+    tr.className = p.status;
+    const patientIndex = patients.indexOf(p); // original index for actions
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>${p.room}</td>
+      <td>${p.presenting}</td>
+      <td>${p.diagnosis}</td>
+      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td>
+        <a class="nhsuk-button nhsuk-button--secondary" href="edit-patient.html?index=${patientIndex}">Edit</a>
+        <a class="nhsuk-button nhsuk-button--warning" href="delete-patient.html?index=${patientIndex}">Delete</a>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  });
+
+  // Pagination buttons
+  const pagDiv = document.getElementById('pagination');
+  pagDiv.innerHTML = '';
+  for(let i=1;i<=totalPages;i++){
+    const btn=document.createElement('button');
+    btn.textContent=i;
+    btn.className='nhsuk-button nhsuk-button--secondary';
+    if(i===currentPage) btn.disabled=true;
+    btn.addEventListener('click',()=>{ currentPage=i; renderTable(); });
+    pagDiv.appendChild(btn);
+  }
+}
+
+// Sorting
+function sortTable(col){
+  if(currentSort===col) sortAsc=!sortAsc;
+  else { currentSort=col; sortAsc=true; }
+  renderTable();
+}
+
+// Search filter
+document.getElementById('search').addEventListener('input', function(){
+  searchFilter=this.value; currentPage=1; renderTable();
+});
+
+// Export CSV
+document.getElementById('exportCSV').addEventListener('click', function(){
+  let csv='Name,Room,Presenting Condition,Diagnosis,Status\n';
+  patients.forEach(p=>{ csv+=`${p.name},${p.room},${p.presenting},${p.diagnosis},${p.status}\n`; });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='patients.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Listen for changes in other tabs (live updates)
+window.addEventListener('storage', function(e){
+  if(e.key==='patients'){
+    patients = JSON.parse(e.newValue || '[]');
+    renderTable();
+  }
+});
+
+// Initial render
+renderTable();
 </script>
 
 </main>
