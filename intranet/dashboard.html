@@ -1,69 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Staff Dashboard - Roblox Health Service</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../assets/css/nhsuk.min.css">
-  <style>
-    .card-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
-    .card-list li { flex: 1 1 calc(33% - 1rem); min-width: 200px; }
-    .card-link {
-      display: block; padding: 1rem; background: #f3f3f3;
-      border: 1px solid #d0d0d0; border-radius: 4px; text-decoration: none;
-      color: #0b0c0c;
-    }
-    .card-link:hover { background: #e5e5e5; }
-    .card-header { font-weight: bold; margin-bottom: .5rem; }
-  </style>
+<meta charset="UTF-8">
+<title>Dashboard - Roblox Health Service</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/nhsuk.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .cards { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+  .card { flex: 1 1 200px; padding: 1rem; border-radius: 8px; color: white; font-weight: bold; text-align: center; }
+  .Critical { background-color: #d9534f; }   /* red */
+  .Stable { background-color: #5cb85c; }     /* green */
+  .Recovering { background-color: #f0ad4e; } /* orange */
+  .Total { background-color: #0275d8; }      /* blue */
+  .links { margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+  .recent { margin-top: 2rem; }
+  .recent h2 { margin-bottom: 0.5rem; }
+  .recent ul { list-style:none; padding-left:0; }
+  .recent li { padding:0.25rem 0; border-bottom:1px solid #ddd; }
+  canvas { max-width:600px; margin-top:2rem; }
+</style>
 </head>
 <body class="nhsuk-body nhsuk-clearfix">
 
-<header class="nhsuk-header" role="banner">
+<header class="nhsuk-header">
   <div class="nhsuk-width-container nhsuk-header__container">
-    <div class="nhsuk-header__content">
-      <span class="nhsuk-header__logo"><span class="nhsuk-header__logo-text">Roblox Health Service</span></span>
-      <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
-        <ul class="nhsuk-header__navigation-list">
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="../index.html">Home</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="patients.html">Patients</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="add-patient.html">Add Patient</a></li>
-          <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="login.html">Logout</a></li>
-        </ul>
-      </nav>
-    </div>
+    <span class="nhsuk-header__logo-text">Roblox Health Service</span>
+    <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
+      <ul class="nhsuk-header__navigation-list">
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="dashboard.html">Dashboard</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="patients.html">Patients</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="add-patient.html">Add Patient</a></li>
+        <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link" href="login.html">Logout</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
 <div class="nhsuk-width-container">
-  <main class="nhsuk-main-wrapper">
-    <h1 class="nhsuk-heading-xl">Staff Dashboard</h1>
-    <p class="nhsuk-body-l">Welcome, staff member. Select an option below to continue.</p>
+<main class="nhsuk-main-wrapper">
+<h1 class="nhsuk-heading-xl">Dashboard</h1>
 
-    <section>
-      <h2 class="nhsuk-heading-l">Patient Management</h2>
-      <ul class="card-list">
-        <li><a href="patients.html" class="card-link"><span class="card-header">View Patients</span> See all admitted patients.</a></li>
-        <li><a href="add-patient.html" class="card-link"><span class="card-header">Add New Patient</span> Register a new patient.</a></li>
-      </ul>
-    </section>
+<!-- Patient summary cards -->
+<div class="cards">
+  <div class="card Total" id="totalPatients">Total Patients: 0</div>
+  <div class="card Critical" id="criticalPatients">Critical: 0</div>
+  <div class="card Stable" id="stablePatients">Stable: 0</div>
+  <div class="card Recovering" id="recoveringPatients">Recovering: 0</div>
+</div>
 
-    <section>
-      <h2 class="nhsuk-heading-l">Resources</h2>
-      <ul class="card-list">
-        <li><a href="#" class="card-link"><span class="card-header">Policies & Documents</span> Internal guides and policies.</a></li>
-        <li><a href="#" class="card-link"><span class="card-header">Training Materials</span> Staff training resources.</a></li>
-      </ul>
-    </section>
+<div class="links">
+  <a class="nhsuk-button nhsuk-button--secondary" href="patients.html">View All Patients</a>
+  <a class="nhsuk-button nhsuk-button--primary" href="add-patient.html">Add New Patient</a>
+</div>
 
-  </main>
+<!-- Recent patients -->
+<div class="recent">
+  <h2>Recently Added Patients</h2>
+  <ul id="recentPatients"></ul>
+</div>
+
+<!-- Status chart -->
+<canvas id="statusChart"></canvas>
+
+<script>
+// Chart.js setup
+let chartCtx = document.getElementById('statusChart').getContext('2d');
+let statusChart = new Chart(chartCtx, {
+  type: 'bar',
+  data: { labels:['Critical','Stable','Recovering'], datasets:[{ label:'Number of Patients', data:[0,0,0], backgroundColor:['#d9534f','#5cb85c','#f0ad4e'] }] },
+  options: { responsive:true, plugins:{legend:{display:false}, title:{display:true, text:'Patient Status Overview'}}, scales:{y:{beginAtZero:true, precision:0}} }
+});
+
+// Update dashboard function
+function updateDashboard(){
+  const patients = JSON.parse(localStorage.getItem('patients')||'[]');
+  const counts = {Critical:0,Stable:0,Recovering:0};
+  patients.forEach(p=>{ if(counts[p.status]!==undefined) counts[p.status]++; });
+
+  // Update cards
+  document.getElementById('totalPatients').textContent = `Total Patients: ${patients.length}`;
+  document.getElementById('criticalPatients').textContent = `Critical: ${counts.Critical}`;
+  document.getElementById('stablePatients').textContent = `Stable: ${counts.Stable}`;
+  document.getElementById('recoveringPatients').textContent = `Recovering: ${counts.Recovering}`;
+
+  // Update recent 5 patients
+  const recentList = document.getElementById('recentPatients');
+  recentList.innerHTML='';
+  [...patients].reverse().slice(0,5).forEach(p=>{
+    const li=document.createElement('li');
+    li.textContent=`${p.name} | Room: ${p.room} | Status: ${p.status}`;
+    recentList.appendChild(li);
+  });
+
+  // Update chart
+  statusChart.data.datasets[0].data = [counts.Critical, counts.Stable, counts.Recovering];
+  statusChart.update();
+}
+
+// Initial render
+updateDashboard();
+
+// Live updates using storage event
+window.addEventListener('storage', function(e){
+  if(e.key==='patients'){ updateDashboard(); }
+});
+
+// Optional: poll every 2 seconds for same-tab updates
+setInterval(updateDashboard,2000);
+</script>
+
+</main>
 </div>
 
 <footer class="nhsuk-footer">
-  <div class="nhsuk-width-container">
-    <p class="nhsuk-body-s">© Roblox Health Service</p>
-  </div>
+<div class="nhsuk-width-container">
+<p class="nhsuk-body-s">© Roblox Health Service</p>
+</div>
 </footer>
 
 </body>
